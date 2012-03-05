@@ -108,11 +108,11 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		 */
 		public function assets() {
 		
-			global $current_screen;
+			global $current_screen, $pagenow;
 			
 			wp_register_script( 'localendar-admin', plugins_url( 'lib/js/admin.js', __FILE__ ), array( 'jquery' ), '1.0.0', true );
 			
-			if ( 'widgets' == $current_screen->id )
+			if ( 'widgets' == $current_screen->id || in_array( $pagenow, array( 'post.php', 'page.php', 'post-new.php', 'post-edit.php' ) ) )
 				wp_enqueue_script( 'localendar-admin' );
 		
 		}
@@ -156,16 +156,21 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 				?>
 				<script type="text/javascript">
 					function insertCalendar() {
-						var id = jQuery('#select-localendar-slider').val();
+						var user	= jQuery('#localendar-user').val() ? 'username="' + jQuery('#localendar-user').val() + '"' : '';
+						var type	= jQuery('.localendar-types input:checked').val() ? 'type="' + jQuery('.localendar-types input:checked').val() + '"' : '';
+						var style	= jQuery('#localendar-styles').val() ? 'style="' + jQuery('#localendar-styles').val() + '"' : '';
+						var hide	= jQuery('#localendar-events').is(':checked') ? 'hide_events="true"' : 'hide_events="false"';
+						var text	= jQuery('#localendar-link-text').val() ? 'link_text="' + jQuery('#localendar-link-text').val() + '"' : '';
+						console.log(user, type, style, hide, text);
 						
 						/** Return early if no slider is selected */
-						if ( '' == id ) {
-							alert('<?php _e( 'Please select a slider.', 'localendar' ); ?>');
+						if ( '' == user ) {
+							alert('<?php _e( 'Please enter your Localendar username.', 'localendar' ); ?>');
 							return;
 						}
 						
 						/** Send the shortcode to the editor */
-						window.send_to_editor('[localendar id="' + id + '"]');
+						window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + text + ']');
 					}		
 				</script>
 				
@@ -284,24 +289,18 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 			
 			/** Extract shortcode atts */
 			extract( shortcode_atts( array(
-				'username' 	=> '',
-				'type' 		=> '',
-				'include' 	=> '',
-				'dynamic' 	=> '',
-				'style' 	=> ''
+				'username' 		=> '',
+				'type' 			=> '',
+				'style' 		=> '',
+				'hide_events' 	=> '',
+				'link_text' 	=> ''
 			), $atts ) );
 			
 			if ( ! $username )
 				return __( 'You must enter a valid username to display a calendar.', 'localendar' );
-				
-			$include 	= isset( $include ) ? '&include=' . $include : '';
-			$dynamic 	= isset( $dynamic ) ? '&dynamic=' . $dynamic : '';
-			$style 		= isset( $style ) 	? '&style=' . $style : '';
 			
-			if ( 'iframe' == $type )
-				$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '/' . $include . $dynamic . $style . '></script>';
-			else
-				$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '/' . $include . $dynamic . $style . '></script>';
+			/** Build the calendar */
+			$calendar = TGM_Localendar_Widget::build_calendar( $username, $type, $style, $hide_events, $link_text );
 			
 			return apply_filters( 'tgmlo_calendar_shortcode', $calendar );
 			
@@ -534,7 +533,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 		 * @param string $link_text Link text if user chooses to display a linked calendar
 		 * @return string $calendar The built calendar
 		 */
- 	 	private function build_calendar( $username, $type, $style, $hide_events = false, $link_text = '' ) {
+ 	 	public function build_calendar( $username, $type, $style, $hide_events = false, $link_text = '' ) {
  	 	
  	 		$calendar = '';
  	 		
