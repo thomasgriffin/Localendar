@@ -216,6 +216,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
  	 						<p class="select-style"><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
  	 						<p class="styles">
  	 							<select id="localendar-styles" class="localendar-styles" name="localendar-styles">
+ 	 							<option value="" disabled="disabled"><?php _e( 'Select Your Style', 'localendar' ); ?></option>
 								<?php
 									foreach ( $styles as $style ) {
 										switch ( $style ) {
@@ -310,7 +311,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 }
 
 /** Instantiate the class */
-$tgm_localendar = new TGM_Localendar();
+$tgm_localendar = new TGM_Localendar;
 
 if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 	/**
@@ -481,6 +482,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		<p class="select-style"><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
  	 		<p class="styles">
  	 			<select id="<?php echo $this->get_field_id( 'style' ); ?>" class="localendar-styles" name="<?php echo $this->get_field_name( 'style' ); ?>">
+ 	 			<option value="" disabled="disabled"><?php _e( 'Select Your Style', 'localendar' ); ?></option>
 				<?php
 					foreach ( $styles as $style ) {
 						switch ( $style ) {
