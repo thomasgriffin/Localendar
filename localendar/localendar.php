@@ -131,8 +131,8 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 			
 			/** Only run in post/page creation and edit screens */
 			if ( in_array( $pagenow, array( 'post.php', 'page.php', 'post-new.php', 'post-edit.php' ) ) ) {
-				$img 	= '<img src="' . plugins_url( 'lib/css/images/title-icon.png', __FILE__ ) . '" width="16px" height="16px" alt="Add Localendar" />';
-				$output = '<a href="#TB_inline?width=640&inlineId=choose-localendar-slider" class="thickbox" title="' . __( 'Add Localendar', 'localendar' ) . '">' . $img . '</a>';
+				$img 	= '<img src="' . plugins_url( 'lib/images/icon.png', __FILE__ ) . '" width="13px" height="15px" alt="' . esc_attr__( 'Add Localendar', 'localendar' ) . '" />';
+				$output = '<a href="#TB_inline?width=640&inlineId=choose-localendar" class="thickbox" title="' . esc_attr__( 'Add Localendar', 'localendar' ) . '">' . $img . '</a>';
 			}
 			
 			return $context . $output;
@@ -158,7 +158,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 				
 				?>
 				<script type="text/javascript">
-					function insertSlider() {
+					function insertCalendar() {
 						var id = jQuery('#select-localendar-slider').val();
 						
 						/** Return early if no slider is selected */
@@ -172,22 +172,90 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 					}		
 				</script>
 				
-				<div id="choose-localendar-slider" style="display: none;">
+				<div id="choose-localendar" style="display: none;">
 					<div class="wrap" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-						<div id="icon-localendar" class="icon32" style="background: url(<?php echo plugins_url( 'lib/css/images/title-icon.png', __FILE__ ); ?>) no-repeat scroll 0 50%; width: 16px;"><br></div>
-						<h2><?php _e( 'Choose Your Slider', 'localendar' ); ?></h2>
-						<?php do_action( 'tgmsp_before_slider_insertion', $sliders ); ?>
-						<p style="font-weight: bold; padding-bottom: 10px;"><?php _e( 'Select a slider below from the list of available sliders and then click \'Insert\' to place the slider into the editor.', 'localendar' ); ?></p>
-						<select id="select-localendar-slider" style="clear: both; display: block; margin-bottom: 1em;">
+						<div id="icon-localendar" class="icon32" style="background: url(<?php echo plugins_url( 'lib/images/icon.png', __FILE__ ); ?>) no-repeat scroll 0 50%; width: 13px;"><br></div>
+						<h2><?php _e( 'Choose Your Calendar', 'localendar' ); ?></h2>
 						<?php
-							foreach ( $sliders as $slider )
-								echo '<option value="' . absint( $slider->ID ) . '">' . esc_attr( $slider->post_title ) . '</option>';
-						?>
-						</select>
-						
-						<input type="button" id="localendar-insert-slider" class="button-primary" value="<?php esc_attr_e( 'Insert Slider', 'localendar' ); ?>" onclick="insertSlider();" />
-						<a id="localendar-cancel-slider" class="button-secondary" onclick="tb_remove();" title="<?php esc_attr_e( 'Cancel Slider Insertion', 'localendar' ); ?>"><?php _e( 'Cancel Slider Insertion', 'localendar' ); ?></a>
-						<?php do_action( 'tgmsp_after_slider_insertion', $sliders ); ?>
+						$types 	= array( 'link', 'full', 'static', 'iframe', 'mini' );
+ 	 					$styles = array( 'mb', 'mb2', 'ml', 'wb', 'wl', 'dv', 'th' );
+ 	 					?>
+ 	 		<style type="text/css">.localendar-form .localendar-types input[type="radio"] { vertical-align: middle; } .localendar-form .localendar-types label { margin-left: 5px; vertical-align: middle; }</style>
+ 	 		<div class="localendar-form">
+ 	 		<p>
+ 	 			<label for="localendar-user"><?php _e( 'Localendar Username', 'localendar' ); ?></label>
+ 	 			<input id="localendar-user" name="localendar-user" type="text" value="" />
+ 	 		</p>
+ 	 		<p><strong><?php _e( 'Step 1: How do you want to include your calendar?', 'localendar' ); ?></strong></p>
+ 	 		<p class="localendar-types">
+			<?php 
+				foreach ( $types as $type ) {
+					echo '<input id="localendar-type-' . $type . '" type="radio" name="localendar-type" value="' . $type . '" />';
+
+					switch ( $type ) {
+						case 'link' :
+							echo '<label for="localendar-type-link">' . __( 'a link to a <strong>full-page</strong> view of my calendar', 'localendar' ) . '</label><br />';
+							break 1;
+						case 'full' :
+							echo '<label for="localendar-type-full">' . __( 'a <strong>fully-interactive</strong> embedded calendar', 'localendar' ) . '</label><br />';
+							break 1;
+						case 'static' :
+							echo '<label for="localendar-type-static">' . __( 'a <strong>static</strong> (non-interactive) embedded calendar', 'localendar' ) . '</label><br />';
+							break 1;
+						case 'iframe' :
+							echo '<label for="localendar-type-iframe">' . __( 'my calendar <strong>in an &#60;iframe&#62;</strong>', 'localendar' ) . '</label><br />';
+							break 1;
+						case 'mini' :
+							echo '<label for="localendar-type-mini">' . __( 'an <strong>interactive mini-calendar</strong> with pop-up event balloons', 'localendar' ) . '</label><br />';
+							break 1;
+					}
+					
+				} 
+			?>
+ 	 		</p>
+ 	 		<p class="localendar-link-text">
+ 	 			<label for="localendar-link-text"><?php _e( 'Link Text', 'localendar' ); ?></label>
+ 	 			<input id="localendar-link-text" name="localendar-link-text" type="text" value="" />
+ 	 		</p>
+ 	 		<p class="select-style"><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
+ 	 		<p class="styles">
+ 	 			<select id="localendar-styles" class="localendar-styles" name="localendar-styles">
+				<?php
+					foreach ( $styles as $style ) {
+						switch ( $style ) {
+							case 'mb' :
+								echo '<option value="' . esc_attr( $style ) . '">' . __( 'Month Block-View', 'localendar' ) . '</option>';
+								break 1;
+							case 'mb2' :
+								echo '<option value="' . esc_attr( $style ) . '">' . __( 'Month Block-View (Style #2)', 'localendar' ) . '</option>';
+								break 1;
+							case 'ml' :
+								echo '<option value="' . esc_attr( $style ) . '">' . __( 'Month List-View', 'localendar' ) . '</option>';
+								break 1;
+							case 'wb' :
+								echo '<option value="' . esc_attr( $style ) . '">' . __( 'Week Block-View', 'localendar' ) . '</option>';
+								break 1;
+							case 'wl' :
+								echo '<option value="' . esc_attr( $style ) . '">' . __( 'Week List-View', 'localendar' ) . '</option>';
+								break 1;
+							case 'dv' :
+								echo '<option value="' . esc_attr( $style ) . '">' . __( 'Day View', 'localendar' ) . '</option>';
+								break 1;
+							case 'th' :
+								echo '<option value="' . esc_attr( $style ) . '">' . __( 'Today + "Happening Soon"', 'localendar' ) . '</option>';
+								break 1;
+						}
+					}
+				?>
+				</select>
+ 	 		</p>
+ 	 		<p class="localendar-hide-events">
+ 	 			<input id="localendar-events" name="localendar-events" type="checkbox" value="" />
+ 	 			<label for="localendar-events"><?php _e( 'Hide events that occur in the previous/next month when applicable?', 'localendar' ); ?></label>
+ 	 		</p>
+ 	 		<input type="button" id="soliloquy-insert-slider" class="button-primary" value="<?php _e( 'Insert Calendar', 'localendar' ); ?>" onclick="insertCalendar();" />
+					<a id="soliloquy-cancel-slider" class="button-secondary" onclick="tb_remove();" title="<?php esc_attr_e( 'Cancel Calendar Insertion', 'localendar' ); ?>"><?php _e( 'Cancel Calendar Insertion', 'localendar' ); ?></a>
+ 	 		</div>
 					</div>
 				</div>
 				<?php
@@ -370,7 +438,6 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		$styles = array( 'mb', 'mb2', 'ml', 'wb', 'wl', 'dv', 'th' );
  	 		
  	 		?>
- 	 		<!-- Output styling inline to avoid having to make an unnecessary CSS call -->
  	 		<style type="text/css">.localendar-form .localendar-types input[type="radio"] { vertical-align: middle; } .localendar-form .localendar-types label { margin-left: 5px; vertical-align: middle; }</style>
  	 		<div class="localendar-form">
  	 		<?php do_action( 'tgmlo_widget_before_form', $instance ); ?>
@@ -415,7 +482,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 			<label for="<?php echo $this->get_field_id( 'link_text' ); ?>"><?php _e( 'Link Text', 'localendar' ); ?></label>
  	 			<input id="<?php echo $this->get_field_id( 'link_text' ); ?>" name="<?php echo $this->get_field_name( 'link_text' ); ?>" type="text" value="<?php echo esc_attr( $instance['link_text'] ); ?>" style="width: 100%;" />
  	 		</p>
- 	 		<p><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
+ 	 		<p class="select-style"><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
  	 		<p class="styles">
  	 			<select id="<?php echo $this->get_field_id( 'style' ); ?>" class="localendar-styles" name="<?php echo $this->get_field_name( 'style' ); ?>">
 				<?php
@@ -588,32 +655,10 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 				}
  	 				break;
  	 			case 'mini' :
- 	 				switch ( $style ) {
- 	 					case 'mb' :
- 	 						if ( $hide_events )
- 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?current_only=Y" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						else
- 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						break 1;
- 	 					case 'mb2' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M4" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						break 1;
- 	 					case 'ml' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M1" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						break 1;
- 	 					case 'wb' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W0" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						break 1;
- 	 					case 'wl' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W1" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						break 1;
- 	 					case 'dv' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D0" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						break 1;
- 	 					case 'th' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D2" target="_blank">' . esc_attr( $link_text ) . '</a>';
- 	 						break 1;
- 	 				}
+ 	 				$calendar = '<style type="text/css">.localendar-close{position:absolute;top:4px;right:4px;border:none;margin:2px;}.localendar-mini td,th{width:30px;height:30px;text-align:center;vertical-align:middle;font-family:arial;font-size:16px;}.localendar-label,.localendar-time,.localendar-title{font-family:arial;font-size:12px;}.localendar-label{font-weight:bold;font-size:14px;}.localendar-hasEvents{background-color:orange;cursor:pointer;}.localendar-monthName{color:#FFFFFF;}.localendar-balloon{text-align:left;}</style>';
+ 	 				$calendar .= '<script>var lcPopupColor="rgba(230, 230, 230, .9)";var lcPopupOutline="#333333";var lcPopupCornerRadius=20;</script>';
+ 	 				$calendar .= '<script type="text/javascript" src="http://www.localendar.com/js/PublishedIncludeMini.js"></script>';
+					$calendar .= '<script type="text/javascript" src="http://www.localendar.com/public/griffinjt?include=Y&style=M5"></script>';
  	 				break;
  	 		}
  	 		
