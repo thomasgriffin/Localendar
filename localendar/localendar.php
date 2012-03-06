@@ -85,7 +85,6 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		public function init() {
 	
 			/** Load hooks and filters */
-			add_action( 'admin_enqueue_scripts', array ( $this, 'assets' ) );
 			add_filter( 'media_buttons_context', array( $this, 'tinymce' ) );
 			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'jquery' ) );
@@ -96,24 +95,6 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 			
 			/** Load the plugin textdomain for internationalizing strings */
 			load_plugin_textdomain( 'localendar', false, plugin_dir_path( __FILE__ ) . '/lib/languages/' );
-		
-		}
-		
-		/**
-		 * Loads assets for the Localendar plugin.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @global object $current_screen The current screen object
-		 */
-		public function assets() {
-		
-			global $current_screen, $pagenow;
-			
-			wp_register_script( 'localendar-admin', plugins_url( 'lib/js/admin.js', __FILE__ ), array( 'jquery' ), '1.0.0', true );
-			
-			if ( 'widgets' == $current_screen->id || in_array( $pagenow, array( 'post.php', 'page.php', 'post-new.php', 'post-edit.php' ) ) )
-				wp_enqueue_script( 'localendar-admin' );
 		
 		}
 		
@@ -163,9 +144,19 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 						var text	= jQuery('#localendar-link-text').val() ? 'link_text="' + jQuery('#localendar-link-text').val() + '"' : '';
 						console.log(user, type, style, hide, text);
 						
-						/** Return early if no slider is selected */
+						/** Return early if no username, type or style */
 						if ( '' == user ) {
 							alert('<?php _e( 'Please enter your Localendar username.', 'localendar' ); ?>');
+							return;
+						}
+						
+						if ( '' == type ) {
+							alert('<?php _e( 'Please select the type of calendar you want to insert.', 'localendar' ); ?>');
+							return;
+						}
+						
+						if ( '' == style ) {
+							alert('<?php _e( 'Please select a valid style for your calendar.', 'localendar' ); ?>');
 							return;
 						}
 						
@@ -477,11 +468,12 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		<p class="localendar-link-text">
  	 			<label for="<?php echo $this->get_field_id( 'link_text' ); ?>"><?php _e( 'Link Text', 'localendar' ); ?></label>
  	 			<input id="<?php echo $this->get_field_id( 'link_text' ); ?>" name="<?php echo $this->get_field_name( 'link_text' ); ?>" type="text" value="<?php echo esc_attr( $instance['link_text'] ); ?>" style="width: 100%;" />
+ 	 			<span class="description"><?php _e( 'Only applied when the link radio option is selected.', 'localendar' ); ?></span>
  	 		</p>
  	 		<p class="select-style"><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
  	 		<p class="styles">
  	 			<select id="<?php echo $this->get_field_id( 'style' ); ?>" class="localendar-styles" name="<?php echo $this->get_field_name( 'style' ); ?>">
- 	 			<option value="" disabled="disabled"><?php _e( 'Select Your Style', 'localendar' ); ?></option>
+ 	 			<!--<option value="" disabled="disabled"><?php _e( 'Select Your Style', 'localendar' ); ?></option>-->
 				<?php
 					foreach ( $styles as $style ) {
 						switch ( $style ) {
@@ -513,7 +505,8 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		</p>
  	 		<p class="localendar-hide-events">
  	 			<input id="<?php echo $this->get_field_id( 'hide_events' ); ?>" name="<?php echo $this->get_field_name( 'hide_events' ); ?>" type="checkbox" value="<?php echo esc_attr( $instance['hide_events'] ); ?>" <?php checked( $instance['hide_events'], 1 ); ?> />
- 	 			<label for="<?php echo $this->get_field_id( 'hide_events' ); ?>"><?php _e( 'Hide events that occur in the previous/next month when applicable?', 'localendar' ); ?></label>
+ 	 			<label for="<?php echo $this->get_field_id( 'hide_events' ); ?>"><?php _e( 'Hide events that occur in the previous/next month when applicable?', 'localendar' ); ?></label><br />
+ 	 			<span class="description"><?php _e( 'This field is applied only when the "Month Block-View" style is selected.', 'localendar' ); ?></span>
  	 		</p>
  	 		</div>
  	 		<?php do_action( 'tgmlo_widget_after_form', $instance ); ?>
