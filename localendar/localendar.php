@@ -59,9 +59,26 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 			
 			/** Run a hook before the class is loaded and pass the object */
 			do_action_ref_array( 'tgmlo_init', array( $this ) );
-
+			
+			register_activation_hook( __FILE__, array( $this, 'activation' ) );
 			add_action( 'widgets_init', array( $this, 'widget' ) );
 			add_action( 'init', array( $this, 'init' ) );
+		
+		}
+		
+		/**
+		 * Deactivate the plugin if the user is using less than WP 3.2.
+		 *
+		 * @since 1.0.0
+		 */
+		public function activation() {
+		
+			global $wp_version;
+			
+			if ( version_compare( $wp_version, '3.2', '<' ) ) {
+				deactivate_plugins( plugin_basename( __FILE__ ) );
+				wp_die( sprintf( __( 'Your current version of WordPress (<strong>%s</strong>) is not supported by this plugin. You must be using WordPress 3.2 or greater to use this plugin. <a href="%s">Return to the plugins page</a>', 'localendar' ), $wp_version, admin_url( 'plugins.php' ) ) );
+			}
 		
 		}
 		
@@ -142,7 +159,10 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 						var style	= jQuery('#localendar-styles').val() ? 'style="' + jQuery('#localendar-styles').val() + '"' : '';
 						var hide	= jQuery('#localendar-events').is(':checked') ? 'hide_events="true"' : 'hide_events="false"';
 						var text	= jQuery('#localendar-link-text').val() ? 'link_text="' + jQuery('#localendar-link-text').val() + '"' : '';
-						console.log(user, type, style, hide, text);
+						var width 	= jQuery('#localendar-iframe-width').val() ? 'iframe_width="' + jQuery('#localendar-iframe-width').val() + '"' : '';
+						var height 	= jQuery('#localendar-iframe-height').val() ? 'iframe_height="' + jQuery('#localendar-iframe-height').val() + '"' : '';
+						var query 	= jQuery('#localendar-query').val() ? 'query="' + jQuery('#localendar-query').val() + '"' : '';
+						console.log(user, type, style, hide, text, width, height, query);
 						
 						/** Return early if no username, type or style */
 						if ( '' == user ) {
@@ -159,9 +179,34 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 							alert('<?php _e( 'Please select a valid style for your calendar.', 'localendar' ); ?>');
 							return;
 						}
+
+						/** Send shortcode to editor with correct attributes */
+						switch (type) {
+							case 'type="link"' :
+								window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + text + ' ' + query + ']');
+								break;
+							case 'type="full"' :
+								window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + query + ']');
+								break;
+							case 'type="static"' :
+								window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + query + ']');
+								break;
+							case 'type="iframe"' :
+								window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + width + ' ' + height + ' ' + query + ']');
+								break;
+							case 'type="mini"' :
+								window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + query + ']');
+								break;
+						}
 						
-						/** Send the shortcode to the editor */
-						window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + text + ']');
+						/** Clear out all previous entries except username */
+						jQuery('.localendar-types input:checked').prop('checked', false);
+						jQuery('#localendar-styles').prop('selected', false);
+						jQuery('#localendar-events').prop('checked', false);
+						jQuery('#localendar-link-text').val('');
+						jQuery('#localendar-iframe-width').val('');
+						jQuery('#localendar-iframe-height').val('');
+						jQuery('#localendar-query').val('');
 					}		
 				</script>
 				
@@ -246,6 +291,20 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
  	 							<input id="localendar-events" name="localendar-events" type="checkbox" value="" />
  	 							<label for="localendar-events"><?php _e( 'Hide events that occur in the previous/next month when applicable?', 'localendar' ); ?></label>
  	 						</p>
+ 	 						<p class="step-3"><strong><?php _e( 'Step 3: Additional Customizations', 'localendar' ); ?></strong></p>
+ 	 						<p class="localendar-iframe-style">
+ 	 							<label for="localendar-iframe-width"><?php _e( 'Iframe Width?', 'localendar' ); ?></label><br />
+ 	 							<input id="localendar-iframe-width" name="localendar-iframe-width" type="text" value="" />
+ 	 							<span class="description"><?php _e( 'Used to determine width of an iframe (if iframe type is selected).', 'localendar' ); ?></span><br /><br />
+ 	 							<label for="localendar-iframe-height"><?php _e( 'Iframe Height?', 'localendar' ); ?></label><br />
+ 	 							<input id="localendar-iframe-height" name="localendar-iframe-height" type="text" value="" />
+ 	 							<span class="description"><?php _e( 'Used to determine height of an iframe (if iframe type is selected).', 'localendar' ); ?></span>
+ 	 						</p>
+ 	 						<p class="localendar-query-strings">
+ 	 							<?php _e( 'Localendar also accepts a number of other query string parameters. If there are extra parameters that you would like appended to your URL, you can place them in the text field below.', 'localendar' ); ?><br /><br />
+ 	 							<label for="localendar-query"><?php _e( 'Extra Query Args', 'localendar' ); ?></label><br />
+ 	 							<input id="localendar-query" name="localendar-query" type="text" value="" />
+ 	 						</p>
  	 						<input type="button" id="localendar-insert" class="button-primary" value="<?php _e( 'Insert Calendar', 'localendar' ); ?>" onclick="insertCalendar();" />
 							<a id="localendar-cancel" class="button-secondary" onclick="tb_remove();" title="<?php esc_attr_e( 'Cancel Calendar Insertion', 'localendar' ); ?>"><?php _e( 'Cancel Calendar Insertion', 'localendar' ); ?></a>
  	 					</div>
@@ -284,14 +343,17 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 				'type' 			=> '',
 				'style' 		=> '',
 				'hide_events' 	=> '',
-				'link_text' 	=> ''
+				'link_text' 	=> '',
+				'iframe_width'	=> '',
+				'iframe_height'	=> '',
+				'query'			=> ''
 			), $atts ) );
 			
 			if ( ! $username )
 				return __( 'You must enter a valid username to display a calendar.', 'localendar' );
 			
 			/** Build the calendar */
-			$calendar = TGM_Localendar_Widget::build_calendar( $username, $type, $style, $hide_events, $link_text );
+			$calendar = TGM_Localendar_Widget::build_calendar( $username, $type, $style, $hide_events, $link_text, $iframe_width, $iframe_height, $query );
 			
 			return apply_filters( 'tgmlo_calendar_shortcode', $calendar );
 			
@@ -363,7 +425,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		
  	 		do_action( 'tgmlo_widget_before_calendar', $args, $instance );
  	 		
- 	 		$calendar = $this->build_calendar( $instance['username'], $instance['type'], $instance['style'], $instance['hide_events'], $instance['link_text'] );
+ 	 		$calendar = $this->build_calendar( $instance['username'], $instance['type'], $instance['style'], $instance['hide_events'], $instance['link_text'], $instance['width'], $instance['height'], $instance['query'] );
  	 		
  	 		echo sprintf( '<div class="localendar-output">%s</div>', apply_filters( 'tgmlo_calendar_output', $calendar, $args, $instance ) );
  	 			
@@ -394,7 +456,10 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		$instance['type'] 			= esc_attr( $new_instance['type'] );
  	 		$instance['style'] 			= esc_attr( $new_instance['style'] );
  	 		$instance['link_text'] 		= strip_tags( $new_instance['link_text'] );
- 	 		$instance['hide_events'] 	= isset( $new_instance['hide_events'] ) ? (int) 1 : (int) 0;
+ 	 		$instance['hide_events'] 	= isset( $new_instance['hide_events'] ) ? 'true' : 'false';
+ 	 		$instance['width'] 			= intval( $new_instance['width'] ) ? $new_instance['width'] : '';
+ 	 		$instance['height'] 		= intval( $new_instance['height'] ) ? $new_instance['height'] : '';
+ 	 		$instance['query']			= esc_attr( $new_instance['query'] );
  	 		
  	 		do_action( 'tgmlo_widget_update', $new_instance, $instance );
  	 		
@@ -418,7 +483,10 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 			'type' 			=> 'link',
  	 			'style' 		=> 'mb',
  	 			'link_text' 	=> '',
- 	 			'hide_events' 	=> 0
+ 	 			'hide_events' 	=> 0,
+ 	 			'width' 		=> '',
+ 	 			'height' 		=> '',
+ 	 			'query' 		=> ''
  	 		);
  	 		wp_parse_args( (array) $instance, $defaults );
  	 		$types 	= array( 'link', 'full', 'static', 'iframe', 'mini' );
@@ -504,9 +572,23 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 				</select>
  	 		</p>
  	 		<p class="localendar-hide-events">
- 	 			<input id="<?php echo $this->get_field_id( 'hide_events' ); ?>" name="<?php echo $this->get_field_name( 'hide_events' ); ?>" type="checkbox" value="<?php echo esc_attr( $instance['hide_events'] ); ?>" <?php checked( $instance['hide_events'], 1 ); ?> />
+ 	 			<input id="<?php echo $this->get_field_id( 'hide_events' ); ?>" name="<?php echo $this->get_field_name( 'hide_events' ); ?>" type="checkbox" value="<?php echo esc_attr( $instance['hide_events'] ); ?>" <?php checked( $instance['hide_events'], 'true' ); ?> />
  	 			<label for="<?php echo $this->get_field_id( 'hide_events' ); ?>"><?php _e( 'Hide events that occur in the previous/next month when applicable?', 'localendar' ); ?></label><br />
  	 			<span class="description"><?php _e( 'This field is applied only when the "Month Block-View" style is selected.', 'localendar' ); ?></span>
+ 	 		</p>
+ 	 		<p class="step-3"><strong><?php _e( 'Step 3: Additional Customizations', 'localendar' ); ?></strong></p>
+ 	 		<p class="localendar-iframe-style">
+ 	 			<label for="<?php echo $this->get_field_id( 'width' ); ?>"><?php _e( 'Iframe Width?', 'localendar' ); ?></label><br />
+ 	 			<input id="<?php echo $this->get_field_id( 'width' ); ?>" name="<?php echo $this->get_field_name( 'width' ); ?>" type="text" value="<?php echo esc_attr( $instance['width'] ); ?>" style="width: 100%;" />
+ 	 			<span class="description"><?php _e( 'Used to determine width of an iframe (if iframe type is selected).', 'localendar' ); ?></span><br /><br />
+ 	 			<label for="<?php echo $this->get_field_id( 'height' ); ?>"><?php _e( 'Iframe Height?', 'localendar' ); ?></label><br />
+ 	 			<input id="<?php echo $this->get_field_id( 'height' ); ?>" name="<?php echo $this->get_field_name( 'height' ); ?>" type="text" value="<?php echo esc_attr( $instance['height'] ); ?>" style="width: 100%;" />
+ 	 			<span class="description"><?php _e( 'Used to determine height of an iframe (if iframe type is selected).', 'localendar' ); ?></span>
+ 	 		</p>
+ 	 		<p class="localendar-query-strings">
+ 	 			<?php _e( 'Localendar also accepts a number of other query string parameters. If there are extra parameters that you would like appended to your URL, you can place them in the text field below.', 'localendar' ); ?><br /><br />
+ 	 			<label for="<?php echo $this->get_field_id( 'query' ); ?>"><?php _e( 'Extra Query Args', 'localendar' ); ?></label><br />
+ 	 			<input id="<?php echo $this->get_field_id( 'query' ); ?>" name="<?php echo $this->get_field_name( 'query' ); ?>" type="text" value="<?php echo esc_attr( $instance['query'] ); ?>" style="width: 100%;" />
  	 		</p>
  	 		</div>
  	 		<?php do_action( 'tgmlo_widget_after_form', $instance ); ?>
@@ -524,123 +606,127 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 		 * @param string $style The styling of the calendar selection
 		 * @param bool $hide_events Flag to set event hiding
 		 * @param string $link_text Link text if user chooses to display a linked calendar
+		 * @param int $width Width of calendar (iframe only)
+		 * @param int $height Height of calendar (iframe only)
 		 * @return string $calendar The built calendar
 		 */
- 	 	public function build_calendar( $username, $type, $style, $hide_events = false, $link_text = '' ) {
+ 	 	public function build_calendar( $username, $type, $style, $hide_events = 'false', $link_text = '', $width = '', $height = '', $query = '' ) {
  	 	
- 	 		$calendar = '';
+ 	 		$calendar 	= '';
+ 	 		$width 		= isset( $width ) ? $width : 700;
+ 	 		$height 	= isset( $height ) ? $height : 600;
  	 		
  	 		/** Build the calendar */
  	 		switch ( $type ) {
  	 			case 'link' :
  	 				switch ( $style ) {
  	 					case 'mb' :
- 	 						if ( $hide_events )
- 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?current_only=Y" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						if ( 'true' == $hide_events )
+ 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?current_only=Y' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						else
- 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						break 1;
  	 					case 'mb2' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M4" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M4' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						break 1;
  	 					case 'ml' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M1" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M1' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						break 1;
  	 					case 'wb' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W0" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W0' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						break 1;
  	 					case 'wl' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W1" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W1' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						break 1;
  	 					case 'dv' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D0" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D0' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						break 1;
  	 					case 'th' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D2" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D2' . $query . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
  	 						break 1;
  	 				}
  	 				break;
  	 			case 'full' :
  	 				switch ( $style ) {
  	 					case 'mb' :
- 	 						if ( $hide_events )
- 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M0&current_only=Y"></script>';
+ 	 						if ( 'true' == $hide_events )
+ 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M0&current_only=Y' . $query . '"></script>';
  	 						else
- 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M0"></script>';
+ 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M0' . $query . '"></script>';
  	 						break 1;
  	 					case 'mb2' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M4"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M4' . $query . '"></script>';
  	 						break 1;
  	 					case 'ml' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M1"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=M1' . $query . '"></script>';
  	 						break 1;
  	 					case 'wb' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=W0"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=W0' . $query . '"></script>';
  	 						break 1;
  	 					case 'wl' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=W1"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=W1' . $query . '"></script>';
  	 						break 1;
  	 					case 'dv' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=D0"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=D0' . $query . '"></script>';
  	 						break 1;
  	 					case 'th' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=D2"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&dynamic=Y&style=D2' . $query . '"></script>';
  	 						break 1;
  	 				}
  	 				break;
  	 			case 'static' :
  	 				switch ( $style ) {
  	 					case 'mb' :
- 	 						if ( $hide_events )
- 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M0&current_only=Y"></script>';
+ 	 						if ( 'true' == $hide_events )
+ 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M0&current_only=Y' . $query . '"></script>';
  	 						else
- 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M0"></script>';
+ 	 							$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M0' . $query . '"></script>';
  	 						break 1;
  	 					case 'mb2' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M4"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M4' . $query . '"></script>';
  	 						break 1;
  	 					case 'ml' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M1"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M1' . $query . '"></script>';
  	 						break 1;
  	 					case 'wb' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=W0"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=W0' . $query . '"></script>';
  	 						break 1;
  	 					case 'wl' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=W1"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=W1' . $query . '"></script>';
  	 						break 1;
  	 					case 'dv' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=D0"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=D0' . $query . '"></script>';
  	 						break 1;
  	 					case 'th' :
- 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=D2"></script>';
+ 	 						$calendar = '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=D2' . $query . '"></script>';
  	 						break 1;
  	 				}
  	 				break;
  	 			case 'iframe' :
  	 				switch ( $style ) {
  	 					case 'mb' :
- 	 						if ( $hide_events )
- 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?current_only=Y" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						if ( 'true' == $hide_events )
+ 	 							$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '?current_only=Y' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						else
- 	 							$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 							$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						break 1;
  	 					case 'mb2' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M4" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M4' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						break 1;
  	 					case 'ml' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M1" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=M1' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						break 1;
  	 					case 'wb' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W0" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W0' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						break 1;
  	 					case 'wl' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W1" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=W1' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						break 1;
  	 					case 'dv' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D0" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D0' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						break 1;
  	 					case 'th' :
- 	 						$calendar = '<a class="localendar" href="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D2" target="_blank">' . esc_attr( $link_text ) . '</a>';
+ 	 						$calendar = '<iframe src="http://www.localendar.com/public/' . esc_attr( $username ) . '?style=D2' . $query . '" height=' . $height . ' width=' . $width . ' marginheight=0 marginwidth=0 scrolling=no frameborder=0 border=0></iframe>';
  	 						break 1;
  	 				}
  	 				break;
@@ -648,7 +734,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 				$calendar = '<style type="text/css">.localendar-close{position:absolute;top:4px;right:4px;border:none;margin:2px;}.localendar-mini td,th{width:30px;height:30px;text-align:center;vertical-align:middle;font-family:arial;font-size:16px;}.localendar-label,.localendar-time,.localendar-title{font-family:arial;font-size:12px;}.localendar-label{font-weight:bold;font-size:14px;}.localendar-hasEvents{background-color:orange;cursor:pointer;}.localendar-monthName{color:#FFFFFF;}.localendar-balloon{text-align:left;}</style>';
  	 				$calendar .= '<script>var lcPopupColor="rgba(230, 230, 230, .9)";var lcPopupOutline="#333333";var lcPopupCornerRadius=20;</script>';
  	 				$calendar .= '<script type="text/javascript" src="http://www.localendar.com/js/PublishedIncludeMini.js"></script>';
-					$calendar .= '<script type="text/javascript" src="http://www.localendar.com/public/griffinjt?include=Y&style=M5"></script>';
+					$calendar .= '<script type="text/javascript" src="http://www.localendar.com/public/griffinjt?include=Y&style=M5' . $query . '"></script>';
  	 				break;
  	 		}
  	 		
