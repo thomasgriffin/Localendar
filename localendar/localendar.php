@@ -301,7 +301,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
  	 							<span class="description"><?php _e( 'Used to determine height of an iframe (if iframe type is selected).', 'localendar' ); ?></span>
  	 						</p>
  	 						<p class="localendar-query-strings">
- 	 							<?php _e( 'Localendar also accepts a number of other query string parameters. If there are extra parameters that you would like appended to your URL, you can place them in the text field below.', 'localendar' ); ?><br /><br />
+ 	 							<?php _e( 'Localendar also accepts a number of other query string parameters. If there are extra parameters that you would like appended to your URL, you can place them in the text field below. <a href="http://localendar.com/docs/display/lc/Your+Calendar%27s+URL+and+Parameters" target="_blank">Learn more about formatting your calendar URL</a>.', 'localendar' ); ?><br /><br />
  	 							<label for="localendar-query"><?php _e( 'Extra Query Args', 'localendar' ); ?></label><br />
  	 							<input id="localendar-query" name="localendar-query" type="text" value="" />
  	 						</p>
@@ -586,7 +586,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 			<span class="description"><?php _e( 'Used to determine height of an iframe (if iframe type is selected).', 'localendar' ); ?></span>
  	 		</p>
  	 		<p class="localendar-query-strings">
- 	 			<?php _e( 'Localendar also accepts a number of other query string parameters. If there are extra parameters that you would like appended to your URL, you can place them in the text field below.', 'localendar' ); ?><br /><br />
+ 	 			<?php _e( 'Localendar also accepts a number of other query string parameters. If there are extra parameters that you would like appended to your URL, you can place them in the text field below. <a href="http://localendar.com/docs/display/lc/Your+Calendar%27s+URL+and+Parameters" target="_blank">Learn more about formatting your calendar URL</a>.', 'localendar' ); ?><br /><br />
  	 			<label for="<?php echo $this->get_field_id( 'query' ); ?>"><?php _e( 'Extra Query Args', 'localendar' ); ?></label><br />
  	 			<input id="<?php echo $this->get_field_id( 'query' ); ?>" name="<?php echo $this->get_field_name( 'query' ); ?>" type="text" value="<?php echo esc_attr( $instance['query'] ); ?>" style="width: 100%;" />
  	 		</p>
