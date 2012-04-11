@@ -102,6 +102,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		public function init() {
 	
 			/** Load hooks and filters */
+			add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 			add_filter( 'media_buttons_context', array( $this, 'tinymce' ) );
 			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'jquery' ) );
@@ -112,6 +113,25 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 			
 			/** Load the plugin textdomain for internationalizing strings */
 			load_plugin_textdomain( 'localendar', false, plugin_dir_path( __FILE__ ) . '/lib/languages/' );
+		
+		}
+		
+		/**
+		 * Loads admin scripts only on widgets page or post edit screens.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @global object $current_screen The current screen object
+		 * @global string $pagenow The current page slug
+		 */
+		public function admin_scripts() {
+		
+			global $current_screen, $pagenow;
+			
+			wp_register_script( 'localendar-admin', plugins_url( 'lib/js/admin.js', __FILE__ ), array( 'jquery' ), '1.0.0', true );
+			
+			if ( 'widgets' == $current_screen->id || in_array( $pagenow, array( 'post.php', 'page.php', 'post-new.php', 'post-edit.php' ) ) )
+				wp_enqueue_script( 'localendar-admin' );
 		
 		}
 		
@@ -488,9 +508,9 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 			'height' 		=> '',
  	 			'query' 		=> ''
  	 		);
- 	 		wp_parse_args( (array) $instance, $defaults );
- 	 		$types 	= array( 'link', 'full', 'static', 'iframe', 'mini' );
- 	 		$styles = array( 'mb', 'mb2', 'ml', 'wb', 'wl', 'dv', 'th' );
+ 	 		$defaults 	= wp_parse_args( (array) $instance, $defaults );
+ 	 		$types 		= array( 'link', 'full', 'static', 'iframe', 'mini' );
+ 	 		$styles 	= array( 'mb', 'mb2', 'ml', 'wb', 'wl', 'dv', 'th' );
  	 		
  	 		?>
  	 		<style type="text/css">.localendar-form .localendar-types input[type="radio"] { vertical-align: middle; } .localendar-form .localendar-types label { margin-left: 5px; vertical-align: middle; }</style>
@@ -498,18 +518,18 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		<?php do_action( 'tgmlo_widget_before_form', $instance ); ?>
  	 		<p>
  	 			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Widget Title', 'localendar' ); ?></label>
- 	 			<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" style="width: 100%;" />
+ 	 			<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $defaults['title'] ); ?>" style="width: 100%;" />
  	 		</p>
  	 		<?php do_action( 'tgmlo_widget_middle_form', $instance ); ?>
  	 		<p>
  	 			<label for="<?php echo $this->get_field_id( 'username' ); ?>"><?php _e( 'Localendar Username', 'localendar' ); ?></label>
- 	 			<input id="<?php echo $this->get_field_id( 'username' ); ?>" name="<?php echo $this->get_field_name( 'username' ); ?>" type="text" value="<?php echo esc_attr( $instance['username'] ); ?>" style="width: 100%;" />
+ 	 			<input id="<?php echo $this->get_field_id( 'username' ); ?>" name="<?php echo $this->get_field_name( 'username' ); ?>" type="text" value="<?php echo esc_attr( $defaults['username'] ); ?>" style="width: 100%;" />
  	 		</p>
  	 		<p><strong><?php _e( 'Step 1: How do you want to include your calendar?', 'localendar' ); ?></strong></p>
  	 		<p class="localendar-types">
 			<?php 
 				foreach ( $types as $type ) {
-					$checked = ( $type == $instance['type'] ) ? 'checked="checked"' : '';
+					$checked = ( $type == $defaults['type'] ) ? 'checked="checked"' : '';
 					echo '<input id="' . $this->get_field_id( 'type' ) . '" class="localendar-type-' . $type . '" type="radio" name="' . $this->get_field_name( 'type' ) . '" value="' . $type . '"' . $checked . ' />';
 
 					switch ( $type ) {
@@ -535,7 +555,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		</p>
  	 		<p class="localendar-link-text">
  	 			<label for="<?php echo $this->get_field_id( 'link_text' ); ?>"><?php _e( 'Link Text', 'localendar' ); ?></label>
- 	 			<input id="<?php echo $this->get_field_id( 'link_text' ); ?>" name="<?php echo $this->get_field_name( 'link_text' ); ?>" type="text" value="<?php echo esc_attr( $instance['link_text'] ); ?>" style="width: 100%;" />
+ 	 			<input id="<?php echo $this->get_field_id( 'link_text' ); ?>" name="<?php echo $this->get_field_name( 'link_text' ); ?>" type="text" value="<?php echo esc_attr( $defaults['link_text'] ); ?>" style="width: 100%;" />
  	 			<span class="description"><?php _e( 'Only applied when the link radio option is selected.', 'localendar' ); ?></span>
  	 		</p>
  	 		<p class="select-style"><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
@@ -546,25 +566,25 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 					foreach ( $styles as $style ) {
 						switch ( $style ) {
 							case 'mb' :
-								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $instance['style'], false ) . '>' . __( 'Month Block-View', 'localendar' ) . '</option>';
+								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $defaults['style'], false ) . '>' . __( 'Month Block-View', 'localendar' ) . '</option>';
 								break 1;
 							case 'mb2' :
-								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $instance['style'], false ) . '>' . __( 'Month Block-View (Style #2)', 'localendar' ) . '</option>';
+								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $defaults['style'], false ) . '>' . __( 'Month Block-View (Style #2)', 'localendar' ) . '</option>';
 								break 1;
 							case 'ml' :
-								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $instance['style'], false ) . '>' . __( 'Month List-View', 'localendar' ) . '</option>';
+								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $defaults['style'], false ) . '>' . __( 'Month List-View', 'localendar' ) . '</option>';
 								break 1;
 							case 'wb' :
-								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $instance['style'], false ) . '>' . __( 'Week Block-View', 'localendar' ) . '</option>';
+								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $defaults['style'], false ) . '>' . __( 'Week Block-View', 'localendar' ) . '</option>';
 								break 1;
 							case 'wl' :
-								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $instance['style'], false ) . '>' . __( 'Week List-View', 'localendar' ) . '</option>';
+								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $defaults['style'], false ) . '>' . __( 'Week List-View', 'localendar' ) . '</option>';
 								break 1;
 							case 'dv' :
-								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $instance['style'], false ) . '>' . __( 'Day View', 'localendar' ) . '</option>';
+								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $defaults['style'], false ) . '>' . __( 'Day View', 'localendar' ) . '</option>';
 								break 1;
 							case 'th' :
-								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $instance['style'], false ) . '>' . __( 'Today + "Happening Soon"', 'localendar' ) . '</option>';
+								echo '<option value="' . esc_attr( $style ) . '"' . selected( esc_attr( $style ), $defaults['style'], false ) . '>' . __( 'Today + "Happening Soon"', 'localendar' ) . '</option>';
 								break 1;
 						}
 					}
@@ -572,23 +592,23 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 				</select>
  	 		</p>
  	 		<p class="localendar-hide-events">
- 	 			<input id="<?php echo $this->get_field_id( 'hide_events' ); ?>" name="<?php echo $this->get_field_name( 'hide_events' ); ?>" type="checkbox" value="<?php echo esc_attr( $instance['hide_events'] ); ?>" <?php checked( $instance['hide_events'], 'true' ); ?> />
+ 	 			<input id="<?php echo $this->get_field_id( 'hide_events' ); ?>" name="<?php echo $this->get_field_name( 'hide_events' ); ?>" type="checkbox" value="<?php echo esc_attr( $defaults['hide_events'] ); ?>" <?php checked( $defaults['hide_events'], 'true' ); ?> />
  	 			<label for="<?php echo $this->get_field_id( 'hide_events' ); ?>"><?php _e( 'Hide events that occur in the previous/next month when applicable?', 'localendar' ); ?></label><br />
  	 			<span class="description"><?php _e( 'This field is applied only when the "Month Block-View" style is selected.', 'localendar' ); ?></span>
  	 		</p>
  	 		<p class="step-3"><strong><?php _e( 'Step 3: Additional Customizations', 'localendar' ); ?></strong></p>
  	 		<p class="localendar-iframe-style">
  	 			<label for="<?php echo $this->get_field_id( 'width' ); ?>"><?php _e( 'Iframe Width?', 'localendar' ); ?></label><br />
- 	 			<input id="<?php echo $this->get_field_id( 'width' ); ?>" name="<?php echo $this->get_field_name( 'width' ); ?>" type="text" value="<?php echo esc_attr( $instance['width'] ); ?>" style="width: 100%;" />
+ 	 			<input id="<?php echo $this->get_field_id( 'width' ); ?>" name="<?php echo $this->get_field_name( 'width' ); ?>" type="text" value="<?php echo esc_attr( $defaults['width'] ); ?>" style="width: 100%;" />
  	 			<span class="description"><?php _e( 'Used to determine width of an iframe (if iframe type is selected).', 'localendar' ); ?></span><br /><br />
  	 			<label for="<?php echo $this->get_field_id( 'height' ); ?>"><?php _e( 'Iframe Height?', 'localendar' ); ?></label><br />
- 	 			<input id="<?php echo $this->get_field_id( 'height' ); ?>" name="<?php echo $this->get_field_name( 'height' ); ?>" type="text" value="<?php echo esc_attr( $instance['height'] ); ?>" style="width: 100%;" />
+ 	 			<input id="<?php echo $this->get_field_id( 'height' ); ?>" name="<?php echo $this->get_field_name( 'height' ); ?>" type="text" value="<?php echo esc_attr( $defaults['height'] ); ?>" style="width: 100%;" />
  	 			<span class="description"><?php _e( 'Used to determine height of an iframe (if iframe type is selected).', 'localendar' ); ?></span>
  	 		</p>
  	 		<p class="localendar-query-strings">
  	 			<?php _e( 'Localendar also accepts a number of other query string parameters. If there are extra parameters that you would like appended to your URL, you can place them in the text field below. <a href="http://localendar.com/docs/display/lc/Your+Calendar%27s+URL+and+Parameters" target="_blank">Learn more about formatting your calendar URL</a>.', 'localendar' ); ?><br /><br />
  	 			<label for="<?php echo $this->get_field_id( 'query' ); ?>"><?php _e( 'Extra Query Args', 'localendar' ); ?></label><br />
- 	 			<input id="<?php echo $this->get_field_id( 'query' ); ?>" name="<?php echo $this->get_field_name( 'query' ); ?>" type="text" value="<?php echo esc_attr( $instance['query'] ); ?>" style="width: 100%;" />
+ 	 			<input id="<?php echo $this->get_field_id( 'query' ); ?>" name="<?php echo $this->get_field_name( 'query' ); ?>" type="text" value="<?php echo esc_attr( $defaults['query'] ); ?>" style="width: 100%;" />
  	 		</p>
  	 		</div>
  	 		<?php do_action( 'tgmlo_widget_after_form', $instance ); ?>
