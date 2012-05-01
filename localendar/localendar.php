@@ -102,7 +102,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		public function init() {
 	
 			/** Load hooks and filters */
-			add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
+			add_action( 'admin_enqueue_scripts', array ( $this, 'admin_scripts' ) );
 			add_filter( 'media_buttons_context', array( $this, 'tinymce' ) );
 			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'jquery' ) );
@@ -125,14 +125,14 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		 * @global string $pagenow The current page slug
 		 */
 		public function admin_scripts() {
-		
+
 			global $current_screen, $pagenow;
-			
+
 			wp_register_script( 'localendar-admin', plugins_url( 'lib/js/admin.js', __FILE__ ), array( 'jquery' ), '1.0.0', true );
-			
+
 			if ( 'widgets' == $current_screen->id || in_array( $pagenow, array( 'post.php', 'page.php', 'post-new.php', 'post-edit.php' ) ) )
 				wp_enqueue_script( 'localendar-admin' );
-		
+
 		}
 		
 		/**
@@ -514,7 +514,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		
  	 		?>
  	 		<style type="text/css">.localendar-form .localendar-types input[type="radio"] { vertical-align: middle; } .localendar-form .localendar-types label { margin-left: 5px; vertical-align: middle; }</style>
- 	 		<div class="localendar-form">
+ 	 		<div id="localendar-instance-<?php echo $this->number; ?>" class="localendar-form">
  	 		<?php do_action( 'tgmlo_widget_before_form', $instance ); ?>
  	 		<p>
  	 			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Widget Title', 'localendar' ); ?></label>
@@ -561,7 +561,6 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		<p class="select-style"><strong><?php _e( 'Step 2: Select the style for your calendar.', 'localendar' ); ?></strong></p>
  	 		<p class="styles">
  	 			<select id="<?php echo $this->get_field_id( 'style' ); ?>" class="localendar-styles" name="<?php echo $this->get_field_name( 'style' ); ?>">
- 	 			<!--<option value="" disabled="disabled"><?php _e( 'Select Your Style', 'localendar' ); ?></option>-->
 				<?php
 					foreach ( $styles as $style ) {
 						switch ( $style ) {
@@ -611,8 +610,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 			<input id="<?php echo $this->get_field_id( 'query' ); ?>" name="<?php echo $this->get_field_name( 'query' ); ?>" type="text" value="<?php echo esc_attr( $defaults['query'] ); ?>" style="width: 100%;" />
  	 		</p>
  	 		</div>
- 	 		<?php do_action( 'tgmlo_widget_after_form', $instance ); ?>
- 	 		<?php
+ 	 		<?php do_action( 'tgmlo_widget_after_form', $instance );
  	 	
  	 	}
  	 	
