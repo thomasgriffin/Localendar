@@ -752,7 +752,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 				$calendar = '<style type="text/css">.localendar-close{position:absolute;top:4px;right:4px;border:none;margin:2px;}.localendar-mini td,th{width:30px;height:30px;text-align:center;vertical-align:middle;font-family:arial;font-size:16px;}.localendar-label,.localendar-time,.localendar-title{font-family:arial;font-size:12px;}.localendar-label{font-weight:bold;font-size:14px;}.localendar-hasEvents{background-color:orange;cursor:pointer;}.localendar-monthName{color:#FFFFFF;}.localendar-balloon{text-align:left;}</style>';
  	 				$calendar .= '<script>var lcPopupColor="rgba(230, 230, 230, .9)";var lcPopupOutline="#333333";var lcPopupCornerRadius=20;</script>';
  	 				$calendar .= '<script type="text/javascript" src="http://www.localendar.com/js/PublishedIncludeMini.js"></script>';
-					$calendar .= '<script type="text/javascript" src="http://www.localendar.com/public/griffinjt?include=Y&style=M5' . $query . '"></script>';
+					$calendar .= '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M5' . $query . '"></script>';
  	 				break;
  	 		}
  	 		
