@@ -10,11 +10,11 @@ License: GNU General Public License v2.0 or later
 License URI: http://www.opensource.org/licenses/gpl-license.php
 */
 
-/*	
+/*
 	Copyright 2012	 Thomas Griffin	 (email : thomas@thomasgriffinmedia.com)
 
 	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License, version 2, as 
+	it under the terms of the GNU General Public License, version 2, as
 	published by the Free Software Foundation.
 
 	This program is distributed in the hope that it will be useful,
@@ -37,7 +37,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
  	 * @author Thomas Griffin <thomas@thomasgriffinmedia.com>
  	 */
 	class TGM_Localendar {
-	
+
 		/**
 		 * Holds a copy of the object for easy reference.
 		 *
@@ -46,7 +46,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		 * @var string
 		 */
 		static $instance;
-	
+
 		/**
 		 * Constructor. Hooks all interactions into correct areas to start
 		 * the class.
@@ -54,45 +54,45 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		 * @since 1.0.0
 		 */
 		public function __construct() {
-			
+
 			self::$instance = $this;
-			
+
 			/** Run a hook before the class is loaded and pass the object */
 			do_action_ref_array( 'tgmlo_init', array( $this ) );
-			
+
 			register_activation_hook( __FILE__, array( $this, 'activation' ) );
 			add_action( 'widgets_init', array( $this, 'widget' ) );
 			add_action( 'init', array( $this, 'init' ) );
-		
+
 		}
-		
+
 		/**
 		 * Deactivate the plugin if the user is using less than WP 3.2.
 		 *
 		 * @since 1.0.0
 		 */
 		public function activation() {
-		
+
 			global $wp_version;
-			
+
 			if ( version_compare( $wp_version, '3.2', '<' ) ) {
 				deactivate_plugins( plugin_basename( __FILE__ ) );
 				wp_die( sprintf( __( 'Your current version of WordPress (<strong>%s</strong>) is not supported by this plugin. You must be using WordPress 3.2 or greater to use this plugin. <a href="%s">Return to the plugins page</a>', 'localendar' ), $wp_version, admin_url( 'plugins.php' ) ) );
 			}
-		
+
 		}
-		
+
 		/**
 		 * Instantiates the Localendar widget.
 		 *
 		 * @since 1.0.0
 		 */
 		public function widget() {
-		
+
 			register_widget( 'TGM_Localendar_Widget' );
-		
+
 		}
-		
+
 		/**
 		 * Loads the plugin upgrader, registers the post type and
 		 * loads all the actions and filters for the class.
@@ -100,22 +100,22 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		 * @since 1.0.0
 		 */
 		public function init() {
-	
+
 			/** Load hooks and filters */
 			add_action( 'admin_enqueue_scripts', array ( $this, 'admin_scripts' ) );
 			add_filter( 'media_buttons_context', array( $this, 'tinymce' ) );
 			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'jquery' ) );
-			
+
 			/** Create shortcode to output calendar data and allow shortcode to be used in widgets */
 			add_shortcode( 'localendar', array( $this, 'shortcode' ) );
 			add_filter( 'widget_text', 'do_shortcode' );
-			
+
 			/** Load the plugin textdomain for internationalizing strings */
 			load_plugin_textdomain( 'localendar', false, plugin_dir_path( __FILE__ ) . '/lib/languages/' );
-		
+
 		}
-		
+
 		/**
 		 * Loads admin scripts only on widgets page or post edit screens.
 		 *
@@ -134,7 +134,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 				wp_enqueue_script( 'localendar-admin' );
 
 		}
-		
+
 		/**
 		 * Adds a custom calendar insert button beside the media uploader button.
 		 *
@@ -143,32 +143,32 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 		 * @param array $columns The default columns provided by WP_List_Table
 		 */
 		public function tinymce( $context ) {
-		
+
 			global $pagenow;
 			$output = '';
-			
+
 			/** Only run in post/page creation and edit screens */
 			if ( in_array( $pagenow, array( 'post.php', 'page.php', 'post-new.php', 'post-edit.php' ) ) ) {
 				$img 	= '<img src="' . plugins_url( 'lib/images/icon.png', __FILE__ ) . '" width="13px" height="15px" alt="' . esc_attr__( 'Add Localendar', 'localendar' ) . '" />';
 				$output = '<a href="#TB_inline?width=640&inlineId=choose-localendar" class="thickbox" title="' . esc_attr__( 'Add Localendar', 'localendar' ) . '">' . $img . '</a>';
 			}
-			
+
 			return $context . $output;
-		
+
 		}
-		
+
 		/**
-		 * Outputs the jQuery and HTML necessary to insert a calendar when the user 
-		 * uses the button added to the media buttons above TinyMCE. 
+		 * Outputs the jQuery and HTML necessary to insert a calendar when the user
+		 * uses the button added to the media buttons above TinyMCE.
 		 *
 		 * @since 1.0.0
 		 *
 		 * @global string $pagenow The current page slug
 		 */
 		public function admin_footer() {
-		
+
 			global $pagenow;
-			
+
 			/** Only run in post/page creation and edit screens */
 			if ( in_array( $pagenow, array( 'post.php', 'page.php', 'post-new.php', 'post-edit.php' ) ) ) {
 				?>
@@ -183,18 +183,18 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 						var height 	= jQuery('#localendar-iframe-height').val() ? 'iframe_height="' + jQuery('#localendar-iframe-height').val() + '"' : '';
 						var query 	= jQuery('#localendar-query').val() ? 'query="' + jQuery('#localendar-query').val() + '"' : '';
 						console.log(user, type, style, hide, text, width, height, query);
-						
+
 						/** Return early if no username, type or style */
 						if ( '' == user ) {
 							alert('<?php _e( 'Please enter your Localendar username.', 'localendar' ); ?>');
 							return;
 						}
-						
+
 						if ( '' == type ) {
 							alert('<?php _e( 'Please select the type of calendar you want to insert.', 'localendar' ); ?>');
 							return;
 						}
-						
+
 						if ( '' == style ) {
 							alert('<?php _e( 'Please select a valid style for your calendar.', 'localendar' ); ?>');
 							return;
@@ -218,7 +218,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 								window.send_to_editor('[localendar ' + user + ' ' + type + ' ' + style + ' ' + hide + ' ' + query + ']');
 								break;
 						}
-						
+
 						/** Clear out all previous entries except username */
 						jQuery('.localendar-types input:checked').prop('checked', false);
 						jQuery('#localendar-styles').prop('selected', false);
@@ -227,9 +227,9 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 						jQuery('#localendar-iframe-width').val('');
 						jQuery('#localendar-iframe-height').val('');
 						jQuery('#localendar-query').val('');
-					}		
+					}
 				</script>
-				
+
 				<div id="choose-localendar" style="display: none;">
 					<div class="wrap" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
 						<div id="icon-localendar" class="icon32" style="background: url(<?php echo plugins_url( 'lib/images/icon.png', __FILE__ ); ?>) no-repeat scroll 0 50%; width: 13px;"><br></div>
@@ -246,7 +246,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
  	 						</p>
  	 						<p><strong><?php _e( 'Step 1: How do you want to include your calendar?', 'localendar' ); ?></strong></p>
  	 						<p class="localendar-types">
-							<?php 
+							<?php
 								foreach ( $types as $type ) {
 									echo '<input id="localendar-type-' . $type . '" type="radio" name="localendar-type" value="' . $type . '" />';
 
@@ -267,7 +267,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 											echo '<label for="localendar-type-mini">' . __( 'an <strong>interactive mini-calendar</strong> with pop-up event balloons', 'localendar' ) . '</label><br />';
 											break 1;
 									}
-								} 
+								}
 							?>
  	 						</p>
  	 						<p class="localendar-link-text">
@@ -332,31 +332,31 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 				</div>
 				<?php
 			}
-		
+
 		}
-		
+
 		/**
 		 * Makes sure that jQuery is loaded so the widget can function properly.
 		 *
 		 * @since 1.0.0
 		 */
 		public function jquery() {
-		
+
 			/** Make sure jQuery is loaded */
 			wp_enqueue_script( 'jquery' );
-		
+
 		}
-		
+
 		/**
 		 * Outputs calendar data in a shortcode called 'localendar'.
 		 *
 		 * @since 1.0.0
-		 * 
+		 *
 		 * @param array $atts Array of shortcode attributes
 		 * @return string $calendar Concatenated string of calendar data
 		 */
 		public function shortcode( $atts ) {
-			
+
 			/** Extract shortcode atts */
 			extract( shortcode_atts( array(
 				'username' 		=> '',
@@ -368,17 +368,17 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 				'iframe_height'	=> '',
 				'query'			=> ''
 			), $atts ) );
-			
+
 			if ( ! $username )
 				return __( 'You must enter a valid username to display a calendar.', 'localendar' );
-			
+
 			/** Build the calendar */
 			$calendar = TGM_Localendar_Widget::build_calendar( $username, $type, $style, $hide_events, $link_text, $iframe_width, $iframe_height, $query );
-			
+
 			return apply_filters( 'tgmlo_calendar_shortcode', $calendar );
-			
+
 		}
-		
+
 	}
 }
 
@@ -395,29 +395,29 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 * @author Thomas Griffin <thomas@thomasgriffinmedia.com>
  	 */
  	 class TGM_Localendar_Widget extends WP_Widget {
- 	 
+
  	 	/**
 		 * Constructor. Sets up and creates the widget with appropriate settings.
 		 *
 		 * @since 1.0.0
 		 */
  	 	public function __construct() {
- 	 	
+
  	 		$widget_ops = array(
  	 			'classname' 	=> 'localendar',
  	 			'description' 	=> __( 'Use this widget to place a Localendar in your sidebar.', 'localendar' )
  	 		);
- 	 		
+
  	 		$control_ops = array(
  	 			'id_base' 	=> 'localendar',
  	 			'height' 	=> 350,
  	 			'width' 	=> 400
  	 		);
- 	 		
+
  	 		$this->WP_Widget( 'localendar', __( 'Localendar', 'localendar' ), $widget_ops, $control_ops );
- 	 	
+
  	 	}
- 	 	
+
  	 	/**
 		 * Outputs the widget within the sidebar.
 		 *
@@ -427,36 +427,36 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 		 * @param array $instance The input settings for the current widget instance
 		 */
  	 	public function widget( $args, $instance ) {
- 	 	
+
  	 		/** Take arguments array and turn keys into variables */
  	 		extract( $args );
- 	 		
+
  	 		$title = apply_filters( 'widget_title', $instance['title'] );
- 	 		
+
  	 		do_action( 'tgmlo_widget_before_output', $args, $instance );
- 	 		
+
  	 		echo $before_widget;
- 	 		
+
  	 		do_action( 'tgmlo_widget_before_title', $args, $instance );
- 	 		
+
  	 		/** If a title exists, output it */
  	 		if ( $title )
  	 			echo $before_title . esc_attr( $title ) . $after_title;
- 	 		
+
  	 		do_action( 'tgmlo_widget_before_calendar', $args, $instance );
- 	 		
+
  	 		$calendar = $this->build_calendar( $instance['username'], $instance['type'], $instance['style'], $instance['hide_events'], $instance['link_text'], $instance['width'], $instance['height'], $instance['query'] );
- 	 		
+
  	 		echo sprintf( '<div class="localendar-output">%s</div>', apply_filters( 'tgmlo_calendar_output', $calendar, $args, $instance ) );
- 	 			
+
  	 		do_action( 'tgmlo_widget_after_calendar', $args, $instance );
- 	 			
+
  	 		echo $after_widget;
- 	 		
+
  	 		do_action( 'tgmlo_widget_after_output', $args, $instance );
- 	 	
+
  	 	}
- 	 	
+
  	 	/**
 		 * Sanitizes and updates the widget.
 		 *
@@ -466,10 +466,10 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 		 * @param array $old_instance The old input settings for the current widget instance
 		 */
  	 	public function update( $new_instance, $old_instance ) {
- 	 	
+
  	 		/** Set $instance to the old instance in case no new settings have been updated for a particular field */
  	 		$instance = $old_instance;
- 	 		
+
  	 		/** Sanitize inputs */
  	 		$instance['title'] 			= strip_tags( $new_instance['title'] );
  	 		$instance['username'] 		= strip_tags( $new_instance['username'] );
@@ -480,13 +480,13 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		$instance['width'] 			= intval( $new_instance['width'] ) ? $new_instance['width'] : '';
  	 		$instance['height'] 		= intval( $new_instance['height'] ) ? $new_instance['height'] : '';
  	 		$instance['query']			= esc_attr( $new_instance['query'] );
- 	 		
+
  	 		do_action( 'tgmlo_widget_update', $new_instance, $instance );
- 	 		
+
  	 		return $instance;
- 	 	
+
  	 	}
- 	 	
+
  	 	/**
 		 * Outputs the form where the user can specify settings.
 		 *
@@ -495,7 +495,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 		 * @param array $instance The input settings for the current widget instance
 		 */
  	 	public function form( $instance ) {
- 	 	
+
  	 		/** Set defaults */
  	 		$defaults = array(
  	 			'title' 		=> '',
@@ -511,7 +511,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		$defaults 	= wp_parse_args( (array) $instance, $defaults );
  	 		$types 		= array( 'link', 'full', 'static', 'iframe', 'mini' );
  	 		$styles 	= array( 'mb', 'mb2', 'ml', 'wb', 'wl', 'dv', 'th' );
- 	 		
+
  	 		?>
  	 		<style type="text/css">.localendar-form .localendar-types input[type="radio"] { vertical-align: middle; } .localendar-form .localendar-types label { margin-left: 5px; vertical-align: middle; }</style>
  	 		<div id="localendar-instance-<?php echo $this->number; ?>" class="localendar-form">
@@ -527,7 +527,7 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		</p>
  	 		<p><strong><?php _e( 'Step 1: How do you want to include your calendar?', 'localendar' ); ?></strong></p>
  	 		<p class="localendar-types">
-			<?php 
+			<?php
 				foreach ( $types as $type ) {
 					$checked = ( $type == $defaults['type'] ) ? 'checked="checked"' : '';
 					echo '<input id="' . $this->get_field_id( 'type' ) . '" class="localendar-type-' . $type . '" type="radio" name="' . $this->get_field_name( 'type' ) . '" value="' . $type . '"' . $checked . ' />';
@@ -549,8 +549,8 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 							echo '<label for="' . $this->get_field_id( 'type' ) . '">' . __( 'an <strong>interactive mini-calendar</strong> with pop-up event balloons', 'localendar' ) . '</label><br />';
 							break 1;
 					}
-					
-				} 
+
+				}
 			?>
  	 		</p>
  	 		<p class="localendar-link-text">
@@ -611,9 +611,9 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 		</p>
  	 		</div>
  	 		<?php do_action( 'tgmlo_widget_after_form', $instance );
- 	 	
+
  	 	}
- 	 	
+
  	 	/**
 		 * Helper function for parsing user input into a usable calendar.
 		 *
@@ -629,11 +629,11 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
 		 * @return string $calendar The built calendar
 		 */
  	 	public function build_calendar( $username, $type, $style, $hide_events = 'false', $link_text = '', $width = '', $height = '', $query = '' ) {
- 	 	
+
  	 		$calendar 	= '';
  	 		$width 		= isset( $width ) ? $width : 700;
  	 		$height 	= isset( $height ) ? $height : 600;
- 	 		
+
  	 		/** Build the calendar */
  	 		switch ( $type ) {
  	 			case 'link' :
@@ -749,16 +749,16 @@ if ( ! class_exists( 'TGM_Localendar_Widget' ) ) {
  	 				}
  	 				break;
  	 			case 'mini' :
- 	 				$calendar = '<style type="text/css">.localendar-close{position:absolute;top:4px;right:4px;border:none;margin:2px;}.localendar-mini td,th{width:30px;height:30px;text-align:center;vertical-align:middle;font-family:arial;font-size:16px;}.localendar-label,.localendar-time,.localendar-title{font-family:arial;font-size:12px;}.localendar-label{font-weight:bold;font-size:14px;}.localendar-hasEvents{background-color:orange;cursor:pointer;}.localendar-monthName{color:#FFFFFF;}.localendar-balloon{text-align:left;}</style>';
+ 	 				$calendar = '<style type="text/css">#elsiemini table{width:auto;height:auto;}.localendar-close{position:absolute;top:4px;right:4px;border:none;margin:2px;}.localendar-mini td,th{width:30px;height:30px;text-align:center;vertical-align:middle;font-family:arial;font-size:16px;}.localendar-label,.localendar-time,.localendar-title{font-family:arial;font-size:12px;}.localendar-label{font-weight:bold;font-size:14px;}.localendar-hasEvents{background-color:orange;cursor:pointer;}.localendar-monthName{}.localendar-balloon{text-align:left;}</style>';
  	 				$calendar .= '<script>var lcPopupColor="rgba(230, 230, 230, .9)";var lcPopupOutline="#333333";var lcPopupCornerRadius=20;</script>';
  	 				$calendar .= '<script type="text/javascript" src="http://www.localendar.com/js/PublishedIncludeMini.js"></script>';
 					$calendar .= '<script type="text/javascript" src="http://www.localendar.com/public/' . esc_attr( $username ) . '?include=Y&style=M5' . $query . '"></script>';
  	 				break;
  	 		}
- 	 		
+
  	 		return $calendar;
- 	 	
+
  	 	}
- 	 
+
  	 }
 }
