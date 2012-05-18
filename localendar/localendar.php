@@ -182,7 +182,7 @@ if ( ! class_exists( 'TGM_Localendar' ) ) {
 						var width 	= jQuery('#localendar-iframe-width').val() ? 'iframe_width="' + jQuery('#localendar-iframe-width').val() + '"' : '';
 						var height 	= jQuery('#localendar-iframe-height').val() ? 'iframe_height="' + jQuery('#localendar-iframe-height').val() + '"' : '';
 						var query 	= jQuery('#localendar-query').val() ? 'query="' + jQuery('#localendar-query').val() + '"' : '';
-						console.log(user, type, style, hide, text, width, height, query);
+						//console.log(user, type, style, hide, text, width, height, query);
 
 						/** Return early if no username, type or style */
 						if ( '' == user ) {
